@@ -12,16 +12,18 @@ import (
 )
 
 // MessageFunc defines a type that parses a zap log entry into a Slack message.
-type MessageFunc func(zapcore.Entry, []zapcore.Field) slack.Msg
+type MessageFunc func(zapcore.Entry, []zapcore.Field, map[string]string) slack.Msg
 
-func defaultMessage(entry zapcore.Entry, fields []zapcore.Field) slack.Msg {
-	msgFields := make([]slack.AttachmentField, len(fields))
+func defaultMessage(entry zapcore.Entry, _ []zapcore.Field, strFields map[string]string) slack.Msg {
+	msgFields := make([]slack.AttachmentField, len(strFields))
 
-	for i, field := range fields {
+	i := 0
+	for key, value := range strFields {
 		msgFields[i] = slack.AttachmentField{
-			Title: strings.Title(field.Key),
-			Value: field.String,
+			Title: strings.Title(key),
+			Value: value,
 		}
+		i++
 	}
 
 	msgFields = append(msgFields, slack.AttachmentField{

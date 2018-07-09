@@ -21,6 +21,7 @@ var LevelColors = map[zapcore.Level]string{
 type Core struct {
 	zapcore.LevelEnabler
 	MessageFn MessageFunc
+	enc       *StringObjectEncoder
 	client    *slackhook.Client
 }
 
@@ -29,6 +30,7 @@ func NewCore(enab zapcore.LevelEnabler, client *slackhook.Client) *Core {
 	return &Core{
 		LevelEnabler: enab,
 		MessageFn:    defaultMessage,
+		enc:          NewStringObjectEncoder(),
 		client:       client,
 	}
 }
@@ -47,20 +49,31 @@ func (c *Core) Sync() error {
 	return nil
 }
 
-// With satisfies the zapcore.Core interface but does not alter anything.
+// With implements zapcore.Core interface and stores fields in memory.
 func (c *Core) With(fields []zap.Field) zapcore.Core {
 	clone := *c
+	addFields(clone.enc, fields)
+
 	return &clone
 }
 
 // Write parses a log entry and sends it to Slack.
 func (c *Core) Write(entry zapcore.Entry, fields []zapcore.Field) error {
+	// TODO: Should we do this here?
+	c.With(fields)
+
 	// We don't want to block when sending messages to Slack.
 	// Downside is we don't return any errors, and of course we don't want to
 	// log here because that could potentially lead to an infinite loop.
 	// There is a risk that log entries will end up out of order at Slack.
 	// TODO: Should we do queueing?
-	go c.client.SendMessage(c.MessageFn(entry, fields))
+	go c.client.SendMessage(c.MessageFn(entry, fields, c.enc.Fields))
 
 	return nil
+}
+
+func addFields(enc *StringObjectEncoder, fields []zapcore.Field) {
+	for i := range fields {
+		fields[i].AddTo(enc)
+	}
 }
