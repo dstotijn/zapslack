@@ -6,7 +6,8 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-var zapLevelColors = map[zapcore.Level]string{
+// LevelColors map zap levels to Slack message colors.
+var LevelColors = map[zapcore.Level]string{
 	zapcore.DebugLevel:  "good",
 	zapcore.InfoLevel:   "good",
 	zapcore.WarnLevel:   "warning",

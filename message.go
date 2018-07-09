@@ -44,7 +44,7 @@ func defaultMessage(entry zapcore.Entry, fields []zapcore.Field) slack.Msg {
 				MarkdownIn: []string{"fields"},
 				Footer:     os.Args[0],
 				Ts:         json.Number(strconv.FormatInt(entry.Time.Unix(), 10)),
-				Color:      zapLevelColors[entry.Level],
+				Color:      LevelColors[entry.Level],
 			},
 		},
 	}
