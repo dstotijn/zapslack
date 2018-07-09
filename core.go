@@ -25,7 +25,7 @@ type Core struct {
 }
 
 // NewCore returns a new zap Core.
-func NewCore(enab zapcore.LevelEnabler, client *slackhook.Client) zapcore.Core {
+func NewCore(enab zapcore.LevelEnabler, client *slackhook.Client) *Core {
 	return &Core{
 		LevelEnabler: enab,
 		MessageFn:    defaultMessage,
